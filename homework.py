@@ -87,7 +87,7 @@ class SportsWalking(Training):
         return (
             self.WALK_CAL1 * self.weight
             + (self.get_mean_speed() ** 2 // self.height)
-            * self.WALK_CAL2 * self.weight) * self.duration * self.MIN_IN_1HOUR
+            * self.WALK_CAL2 * self.weight) * (self.duration * self.MIN_IN_1HOUR)
        
 
 @dataclass
