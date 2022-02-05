@@ -121,7 +121,8 @@ ACTIVITIES: Dict[str, Tuple[Type[Training], int]] = {
 }
 TYPE_VALUERROR = ('Тип тренировки {type} не известен')
 DATA_VALUERROR = ('Задано не верное количество параметров {WRONG_NUmber}',
-    'для данного типа тренировки {type}, необходимо {TRUE_NUMBER}')
+                  'для данного типа тренировки {type},',
+                  ' необходимо {TRUE_NUMBER}')
 
 
 def read_package(workout_type: str, data: Any) -> Training:
@@ -129,8 +130,10 @@ def read_package(workout_type: str, data: Any) -> Training:
     if workout_type not in ACTIVITIES:
         raise ValueError(TYPE_VALUERROR.format(type=workout_type))
     if len(data) != ACTIVITIES[workout_type][1]:
-        raise ValueError(DATA_VALUERROR.format(WRONG_NUmber=len(data,
-            type=workout_type, TRUE_NUMBER=ACTIVITIES[workout_type][1]))
+        raise ValueError(
+            DATA_VALUERROR.format(WRONG_NUmber=len(data),
+                                  type=workout_type,
+                                  TRUE_NUMBER=ACTIVITIES[workout_type][1])
         )
     if workout_type in ACTIVITIES:
         return ACTIVITIES[workout_type][0](*data)
