@@ -1,9 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import asdict
 import dataclasses
 from typing import Any, Dict, Type, Tuple
 
 
-@dataclass
+@dataclasses.dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
     MESSAGE = ('Тип тренировки: {training_type}; '
@@ -20,20 +20,15 @@ class InfoMessage:
     calories: float
 
     def get_message(self) -> str:
-        return self.MESSAGE.format(
-            training_type=self.training_type,
-            duration=self.duration,
-            distance=self.distance,
-            speed=self.speed,
-            calories=self.calories
-        )
+        return self.MESSAGE.format(**asdict(self))
 
 
-@dataclass
+@dataclasses.dataclass
 class Training:
     """Базовый класс тренировки."""
     LEN_STEP = 0.65
     M_IN_KM = 1000
+    MIN_IN_HOUR = 60
 
     action: int
     duration: float
@@ -64,41 +59,40 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    SPEED_MULTIPL = 18  # множитель для средней скорости
+    SPEED_MULTIPLIER = 18  # множитель для средней скорости
     SPEED_SHIFT = 20  # вычитаемая константа из значения средней скорости
-    MIN_IN_HOUR = 60
 
     def get_spent_calories(self) -> float:
         return ((
-            self.SPEED_MULTIPL * self.get_mean_speed()
+            self.SPEED_MULTIPLIER * self.get_mean_speed()
             - self.SPEED_SHIFT) * self.weight / self.M_IN_KM
             * self.duration * self.MIN_IN_HOUR
         )
 
 
-@dataclass
+@dataclasses.dataclass
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    WEIGHT_MULTIPL1 = 0.035  # первый множитель для веса
-    WEIGHT_MULTIPL2 = 0.029  # второй множитель для веса
+    WEIGHT_MULTIPLIER_1 = 0.035  # первый множитель для веса
+    WEIGHT_MULTIPLIER_2 = 0.029  # второй множитель для веса
 
     height: float
 
     def get_spent_calories(self) -> float:
         return ((
-            self.WEIGHT_MULTIPL1 * self.weight
+            self.WEIGHT_MULTIPLIER_1 * self.weight
             + (self.get_mean_speed() ** 2 // self.height)
-            * self.WEIGHT_MULTIPL2 * self.weight)
-            * (self.duration * Running.MIN_IN_HOUR)
+            * self.WEIGHT_MULTIPLIER_2 * self.weight)
+            * (self.duration * self.MIN_IN_HOUR)
         )
 
 
-@dataclass
+@dataclasses.dataclass
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP = 1.38
     SPEED_SHIFT = 1.1  # вычитаемая константа для средней скорости
-    SPEED_MULTIPL = 2  # множитель для скорости
+    SPEED_MULTIPLIER = 2  # множитель для скорости
 
     length_pool: float
     count_pool: int
@@ -111,7 +105,7 @@ class Swimming(Training):
 
     def get_spent_calories(self) -> float:
         return (self.get_mean_speed()
-                + self.SPEED_SHIFT) * self.SPEED_MULTIPL * self.weight
+                + self.SPEED_SHIFT) * self.SPEED_MULTIPLIER * self.weight
 
 
 ACTIVITIES: Dict[str, Tuple[Type[Training], int]] = {
@@ -119,23 +113,24 @@ ACTIVITIES: Dict[str, Tuple[Type[Training], int]] = {
     'RUN': (Running, len(dataclasses.fields(Running))),
     'WLK': (SportsWalking, len(dataclasses.fields(SportsWalking)))
 }
-TYPE_VALUERROR = ('Тип тренировки {type} не известен')
-DATA_VALUERROR = ('Задано не верное количество параметров {WRONG_NUmber}',
-                  'для данного типа тренировки {type},',
+TYPE_VALUERROR = ('Тип тренировки {TYPE} не известен')
+DATA_VALUERROR = ('Задано не верное количество параметров {WRONG_NUMBER}',
+                  'для данного типа тренировки {TYPE},',
                   ' необходимо {TRUE_NUMBER}')
 
 
 def read_package(workout_type: str, data: Any) -> Training:
     """Прочитать данные полученные от датчиков."""
     if workout_type not in ACTIVITIES:
-        raise ValueError(TYPE_VALUERROR.format(type=workout_type))
-    if len(data) != ACTIVITIES[workout_type][1]:
+        raise ValueError(TYPE_VALUERROR.format(TYPE=workout_type))
+    ACTIVITIES_DATA: Tuple[Type[Training], int] = ACTIVITIES[workout_type]
+    if len(data) != ACTIVITIES_DATA[1]:
         raise ValueError(
-            DATA_VALUERROR.format(WRONG_NUmber=len(data),
-                                  type=workout_type,
-                                  TRUE_NUMBER=ACTIVITIES[workout_type][1])
+            DATA_VALUERROR.format(WRONG_NUMBER=len(data),
+                                  TYPE=workout_type,
+                                  TRUE_NUMBER=ACTIVITIES_DATA[1])
         )
-    if workout_type in ACTIVITIES:
+    else:
         return ACTIVITIES[workout_type][0](*data)
 
 
