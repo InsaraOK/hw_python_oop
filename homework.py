@@ -1,17 +1,16 @@
-from dataclasses import asdict
 import dataclasses
-from typing import Any, Dict, Type, Tuple
 
 
 @dataclasses.dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
-    MESSAGE = ('Тип тренировки: {training_type}; '
-               'Длительность: {duration:.3f} ч.; '
-               'Дистанция: {distance:.3f} км; '
-               'Ср. скорость: {speed:.3f} км/ч; '
-               'Потрачено ккал: {calories:.3f}.'
-               )
+    MESSAGE = (
+        'Тип тренировки: {training_type}; '
+        'Длительность: {duration:.3f} ч.; '
+        'Дистанция: {distance:.3f} км; '
+        'Ср. скорость: {speed:.3f} км/ч; '
+        'Потрачено ккал: {calories:.3f}.'
+    )
 
     training_type: str
     duration: float
@@ -20,7 +19,7 @@ class InfoMessage:
     calories: float
 
     def get_message(self) -> str:
-        return self.MESSAGE.format(**asdict(self))
+        return self.MESSAGE.format(**dataclasses.asdict(self))
 
 
 @dataclasses.dataclass
@@ -59,8 +58,8 @@ class Training:
 
 class Running(Training):
     """Тренировка: бег."""
-    SPEED_MULTIPLIER = 18  # множитель для средней скорости
-    SPEED_SHIFT = 20  # вычитаемая константа из значения средней скорости
+    SPEED_MULTIPLIER = 18
+    SPEED_SHIFT = 20
 
     def get_spent_calories(self) -> float:
         return ((
@@ -73,8 +72,8 @@ class Running(Training):
 @dataclasses.dataclass
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    WEIGHT_MULTIPLIER_1 = 0.035  # первый множитель для веса
-    WEIGHT_MULTIPLIER_2 = 0.029  # второй множитель для веса
+    WEIGHT_MULTIPLIER_1 = 0.035
+    WEIGHT_MULTIPLIER_2 = 0.029
 
     height: float
 
@@ -91,8 +90,8 @@ class SportsWalking(Training):
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP = 1.38
-    SPEED_SHIFT = 1.1  # вычитаемая константа для средней скорости
-    SPEED_MULTIPLIER = 2  # множитель для скорости
+    SPEED_SHIFT = 1.1
+    SPEED_MULTIPLIER = 2
 
     length_pool: float
     count_pool: int
@@ -108,30 +107,30 @@ class Swimming(Training):
                 + self.SPEED_SHIFT) * self.SPEED_MULTIPLIER * self.weight
 
 
-ACTIVITIES: Dict[str, Tuple[Type[Training], int]] = {
+ACTIVITIES = {
     'SWM': (Swimming, len(dataclasses.fields(Swimming))),
     'RUN': (Running, len(dataclasses.fields(Running))),
     'WLK': (SportsWalking, len(dataclasses.fields(SportsWalking)))
 }
-TYPE_VALUERROR = ('Тип тренировки {TYPE} не известен')
-DATA_VALUERROR = ('Задано не верное количество параметров {WRONG_NUMBER}',
-                  'для данного типа тренировки {TYPE},',
-                  ' необходимо {TRUE_NUMBER}')
+TYPE_VALUERROR = ('Тип тренировки {type} не известен')
+DATA_VALUERROR = ('Задано не верное количество параметров {wrong_number}',
+                  'для данного типа тренировки {type},',
+                  ' необходимо {true_number}')
 
 
-def read_package(workout_type: str, data: Any) -> Training:
+def read_package(workout_type: str, data: float) -> Training:
     """Прочитать данные полученные от датчиков."""
     if workout_type not in ACTIVITIES:
-        raise ValueError(TYPE_VALUERROR.format(TYPE=workout_type))
-    ACTIVITIES_DATA: Tuple[Type[Training], int] = ACTIVITIES[workout_type]
-    if len(data) != ACTIVITIES_DATA[1]:
+        raise ValueError(TYPE_VALUERROR.format(type=workout_type))
+    activities_data = ACTIVITIES[workout_type]
+    if len(data) != activities_data[1]:
         raise ValueError(
-            DATA_VALUERROR.format(WRONG_NUMBER=len(data),
-                                  TYPE=workout_type,
-                                  TRUE_NUMBER=ACTIVITIES_DATA[1])
+            DATA_VALUERROR.format(
+                wrong_number=len(data),
+                type=workout_type,
+                true_number=activities_data[1])
         )
-    else:
-        return ACTIVITIES[workout_type][0](*data)
+    return activities_data[0](*data)
 
 
 def main(training: Training) -> None:
