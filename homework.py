@@ -1,7 +1,7 @@
-import dataclasses
+from dataclasses import dataclass, fields, asdict
 
 
-@dataclasses.dataclass
+@dataclass
 class InfoMessage:
     """Информационное сообщение о тренировке."""
     MESSAGE = (
@@ -19,10 +19,10 @@ class InfoMessage:
     calories: float
 
     def get_message(self) -> str:
-        return self.MESSAGE.format(**dataclasses.asdict(self))
+        return self.MESSAGE.format(**asdict(self))
 
 
-@dataclasses.dataclass
+@dataclass
 class Training:
     """Базовый класс тренировки."""
     LEN_STEP = 0.65
@@ -69,7 +69,7 @@ class Running(Training):
         )
 
 
-@dataclasses.dataclass
+@dataclass
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
     WEIGHT_MULTIPLIER_1 = 0.035
@@ -86,7 +86,7 @@ class SportsWalking(Training):
         )
 
 
-@dataclasses.dataclass
+@dataclass
 class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP = 1.38
@@ -108,9 +108,9 @@ class Swimming(Training):
 
 
 ACTIVITIES = {
-    'SWM': (Swimming, len(dataclasses.fields(Swimming))),
-    'RUN': (Running, len(dataclasses.fields(Running))),
-    'WLK': (SportsWalking, len(dataclasses.fields(SportsWalking)))
+    'SWM': (Swimming, len(fields(Swimming))),
+    'RUN': (Running, len(fields(Running))),
+    'WLK': (SportsWalking, len(fields(SportsWalking)))
 }
 TYPE_VALUERROR = ('Тип тренировки {type} не известен')
 DATA_VALUERROR = ('Задано не верное количество параметров {wrong_number}',
